@@ -38,11 +38,41 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Jump);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Reload);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Shoot);
 	}
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
-	//move based on forward & Y, and Right & X
+	UE_LOG(LogTemp, Warning, TEXT("You presses a move button"));
+
 }
+
+void APlayerCharacter::Look(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("You moved the mouse for looking"));
+
+}
+
+void APlayerCharacter::Shoot(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("You presses a shootbutton"));
+
+}
+
+void APlayerCharacter::Reload(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("You presses a reload button"));
+
+}
+
+void APlayerCharacter::Jump(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("You presses a jump button"));
+
+}
+
 
