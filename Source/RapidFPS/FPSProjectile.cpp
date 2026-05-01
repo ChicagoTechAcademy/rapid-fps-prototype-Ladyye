@@ -8,6 +8,10 @@ AFPSProjectile::AFPSProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+    CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
+
+
     if (!RootComponent)
     {
         RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSceneComponent"));
@@ -17,9 +21,7 @@ AFPSProjectile::AFPSProjectile()
     {
         // Use a sphere as a simple collision representation.
         CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-        // Set the sphere's collision profile name to "Projectile".
-        CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
-        // Set the sphere's collision radius.
+ 
         CollisionComponent->InitSphereRadius(15.0f);
         // Set the root component to be the collision component.
         RootComponent = CollisionComponent;
@@ -38,26 +40,9 @@ AFPSProjectile::AFPSProjectile()
         ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
     }
 
-        if (!ProjectileMeshComponent)
-        {
-            ProjectileMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMeshComponent"));
-            static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("'/Game/Sphere.Sphere'"));
-            if (Mesh.Succeeded())
-            {
-                ProjectileMeshComponent->SetStaticMesh(Mesh.Object);
-            }
+    //Delete the projectile after 3 seconds 
+    InitialLifeSpan = 3.0f;
 
-            static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("'/Game/SphereMaterial.SphereMaterial'"));
-            if (Material.Succeeded())
-            {
-                ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
-            }
-            ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstance);
-            ProjectileMeshComponent->SetRelativeScale3D(FVector(0.09f, 0.09f, 0.09f));
-            ProjectileMeshComponent->SetupAttachment(RootComponent);
-        }
-        // Delete the projectile after 3 seconds.
-        InitialLifeSpan = 3.0f;
     }
 
     // Called when the game starts or when spawned
@@ -80,7 +65,38 @@ AFPSProjectile::AFPSProjectile()
         ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
     }
 
+    void AFPSrojectile::OnHit(UPrinitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+    {
+
+    }
+
+    // Function that is called when the projectile hits something.
+    void AFPSProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+    {
+        if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
+        {
+            OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
+        }
+       // Destroy();
+
+        //Event called when component hits something 
+        CollisionComponent->OnComponentHit.AddDynamic(this, &AFPSProjectile::OnHit);
+
+        //Disable the Projectile Movement Component 
+        if (ProjectileMovementComponent)
+        {
+            ProjectileMovementComponent->StopMovementInmediately();
+            ProjectileMovementComponent->SetActive(false);
+        }
+
+        if (CollisionComponent)
+        {
+            CollisionComponent->SetSimulatioePhysics(true);
+            CollisionComponent->AddImpulse(ProjectileMovementComponent->Velocity);
+        }
+    }
+
    
 
 
-}
+
